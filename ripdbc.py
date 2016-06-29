@@ -1,79 +1,30 @@
 #!/usr/bin/python
-import os
-import time
-import serial
-
-def filename(i):
-  return str(i) + '.rad'
-
-def open_chrome():
-  return serial.Serial('/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0', 57600)
-
-def open_kosmo():
-  return serial.Serial('/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A5005Y58-if00-port0', 115200)
-
-def open_file():
-  logdir = 'data'
-  try:
-    os.mkdir(logdir)
-  except:
-    pass
-  files = os.listdir(logdir)
-
-  i=0
-  while (True):
-    if not (filename(i) in files):
-      break
-    i += 1
-
-  return open(logdir + '/' + filename(i), 'w')
-
-def parse_packet(packet):
-  length = len(packet)
-  result = 0
-  for i in range(length):
-    result |= (packet[length - 1 - i] & 0x7F) << 7*i
-  return result
-
-def read_packet(port):
-  while True:
-    data = ord(port.read(1))
-    if (data & 0x80) != 0:
-      packet = [data] + map(ord, port.read(2))
-      return parse_packet(packet)
+import os,sys
 
 def main():
-  #outfile = open_file()
-  port = open_kosmo() # the detector
-  chrome = open_chrome() # the LED panel
+  inFile = open(sys.argv[1],'r')
+  line = inFile.readline()
+  print(1)
+  while line.find('CANBusList')==-1:
+      line = inFile.readline()
+  print(2)
+  while line.find('BDY_messages')==-1:
+      line = inFile.readline()
 
-  lasttime = time.time()
-  count = 0
-  chrome.write("127")
-  time.sleep(1)
+  print(3)
   while True:
-    data=read_packet(port)
-    if data > 600000:
-      print data
-      smallData = (data>>12) & 0x1FF
-      print str(smallData)
-      chrome.write(str(smallData))
-      time.sleep(0.05)
-  #  outfile.write(str(read_packet(port)))
-  #  outfile.write('\n')
-      count += 1
-    if time.time() - lasttime  > 60:
-      lasttime = time.time()
-  #    outfile.write('time ')
-  #    outfile.write(str(int(time.time())))
-  #    outfile.write('\n')
-      print count
-      count = 0
-    #outfile.flush()
-
-  #outfile.close()
-  port.close()
-  chrome.close()
+      line = inFile.readline()
+      if not line:
+          inFile.close()
+          break
+      spl = line.split()
+      if ((len(spl) == 4) and (spl[0]=='DCD') and (spl[2]==';')):
+          descr = spl[3] # name of CAN data
+          line = inFile.readline()
+          spl = line.split()
+          if ((len(spl) == 2) and (spl[0]=='DCD')):
+              canid = spl[1]
+              print(canid+'\t'+descr)
 
 if __name__ == "__main__":
   main()

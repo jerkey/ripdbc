@@ -1,0 +1,12 @@
+rip a disassembled .so file for DBC data
+to use with SavvyCAN
+
+usage:
+cp dbcheader exapmle.dbc
+python ripdbc.py exapmle.so.asm >> exapmle.dbc
+
+then you can load exapmle.dbc in SavvyCAN and see the named CAN IDs
+
+BUG:
+SavvyCAN displays the message IDs improperly until you click on them to expand.
+this is a bug in SavvyCAN not in ripdbc.py

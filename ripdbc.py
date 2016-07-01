@@ -11,11 +11,13 @@ def getLine(file):
 def main():
   inFile = open(sys.argv[1],'r')
   line = getLine(inFile)
-  while not (line.find('BDY_messages')==0):
+  while not (line.find('PT_messages')==0):
       line = getLine(inFile)
   while True:
       line = getLine(inFile)
       spl = line.split()
+      if line.find('TH_messages')==0:
+          sys.exit()
       if ((len(spl) == 4) and (spl[0]=='DCD') and (spl[2]==';') and (ord(spl[3][1]) & 32 == 0)):
           descr = spl[3][1:-1] # strip "" from name of CANid       not begin with lowercase ^^^
           line = getLine(inFile)

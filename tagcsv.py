@@ -2,6 +2,7 @@
 import os,sys
 
 canIDs = {}
+IDusage = {}
 jC = '\t' # what to join the output fields with
 
 def main():
@@ -29,8 +30,14 @@ def main():
           spl.append(canIDs[canID].ljust(25))
       else:
           spl.append('Unknown: '+spl[1].ljust(15))
+      if IDusage.has_key(canID):
+          IDusage[canID]+=1 # we saw this ID again
+          spl.append(IDusage[canID]) # so we can print it
+      else:
+          IDusage[canID]=1 # first time this canID
+          spl.append('first') # so we can print it
       lineTime = (int(spl[0]) - startTime) / 1000000.0
-      print(str(lineTime).ljust(8)+jC+spl[-1]+jC+'bus'+spl[4]+jC+spl[5]+jC+spl[6]+jC+spl[7]+jC+spl[8]+jC+spl[9]+jC+spl[10]+jC+spl[11]+jC+spl[12]+jC+spl[13])
+      print(str(lineTime).ljust(8)+jC+spl[-2]+jC+'bus'+spl[4]+jC+spl[5]+jC+spl[6]+jC+spl[7]+jC+spl[8]+jC+spl[9]+jC+spl[10]+jC+spl[11]+jC+spl[12]+jC+spl[13]+jC+str(spl[-1]))
       line = csvFile.readline()
   csvFile.close()
   sys.exit(0)

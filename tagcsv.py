@@ -24,7 +24,11 @@ def main():
   startTime = int(line.split(',')[0])
   while line:
       spl = line.split(',')
-      spl.append(canIDs[int(spl[1],16)].ljust(25))
+      canID = int(spl[1],16)
+      if canIDs.has_key(canID):
+          spl.append(canIDs[canID].ljust(25))
+      else:
+          spl.append('Unknown: '+spl[1].ljust(15))
       lineTime = (int(spl[0]) - startTime) / 1000000.0
       print(str(lineTime).ljust(8)+jC+spl[-1]+jC+spl[4]+jC+spl[5]+jC+spl[6]+jC+spl[7]+jC+spl[8]+jC+spl[9]+jC+spl[10]+jC+spl[11]+jC+spl[12]+jC+spl[13])
       line = csvFile.readline()

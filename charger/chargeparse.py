@@ -32,6 +32,18 @@ def parseCan(id,data):
     elif id==770:
         BMS_socMin = (int(data[3]+data[0:2],16) & 1023) * 0.1 # "BMS State Of Charge (SOC). This is the minimum displayed brick SOC.  This is NOT cell SOC"
         message = ('BMS_socMin:%.0f' % BMS_socMin)+'%'
+    elif id==924: # didn't see this at all in the 2018-4-9 capture
+        CC_currentLimit_PT = int(data[0:2],16) * 0.5 # "A" CHG,GTW "periodic TEN_SECONDS chargeModeModelS,periodic TEN_SECONDS voltageModeModelS"
+        CC_pilotState_PT = int(data[3],16) & 3 #: 8|2@1+ (1,0) [0|3] "" CHG,GTW
+        CC_pilotState_PTText = {3:"PT_CC_PILOT_STATE_SNA",2:"PT_CC_PILOT_STATE_FAULTED",1:"PT_CC_PILOT_STATE_IDLE",0:"PT_CC_PILOT_STATE_READY"}
+        CC_numPhases_PT = int(data[3],16) >> 2 #: 10|2@1+ (1,0) [0|3] "" CHG,GTW
+        CC_lineVoltage_PT = int(data[7]+data[4:6],16) & 511 #: 16|9@1+ (1,0) [0|510] "V" CHG,GTW "periodic TEN_SECONDS chargeModeModelS,periodic TEN_SECONDS voltageModeModelS"
+        message = ('CC_currentLimit_PT:%.0f' % CC_currentLimit_PT)+'  CC_pilotState_PT:'+CC_pilotState_PTText.get(CC_pilotState_PT,' ').ljust(25)
+    elif id==930:
+        message = 'BMS_fullChargeComplete:'+str(int(data[2],16) & 1) #: 12|1@1+ (1,0) [0|0] "" CP,GTW "This bit indicates if the BMS is fully charged"
+        message += '  BMS_fastChargerPresent:'+str(int(data[2],16) & 4) #: 14|1@1+ (1,0) [0|0] "" CP,GTW "TRUE when the fast charger Status Message has been received within the last 1 second"
+        message += '  BMS_fcContactorCloseRequest:'+str(int(data[2],16) & 8) #: 15|1@1+ (1,0) [0|0] "" CHG,CHGS,GTW "1 if the charger should close the FC contactors"
+        message += '  BMS_fcContactorPwrIsOn:'+str(int(data[6:8],16) & 16) #: 28|1@1+ (1,0) [0|0] "" CHG,CHGS,GTW "This bit indicates if the BMShas powered the FC Contactor Power line which is used by the charger to diagnose its h/w"
     else:
         message = data
     return message

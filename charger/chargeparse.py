@@ -34,6 +34,7 @@ def parseCan(id,data):
     elif id==770:
         BMS_socMin = (int(data[3]+data[0:2],16) & 1023) * 0.1 # "BMS State Of Charge (SOC). This is the minimum displayed brick SOC.  This is NOT cell SOC"
         message = ('BMS_socMin:%.0f' % BMS_socMin)+'%'+'  CHGPH1_vBat:%.0f' % CHGPH1_vBat
+        message = lastMsg[ids.index(id)] # a hack to prevent printing anything
     elif id==924: # didn't see this at all in the 2018-4-9 capture
         CC_currentLimit_PT = int(data[0:2],16) * 0.5 # "A" CHG,GTW "periodic TEN_SECONDS chargeModeModelS,periodic TEN_SECONDS voltageModeModelS"
         CC_pilotState_PT = int(data[3],16) & 3 #: 8|2@1+ (1,0) [0|3] "" CHG,GTW

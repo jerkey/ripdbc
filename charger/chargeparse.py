@@ -24,6 +24,8 @@ for line in inFile:
                         print(RESET+line[i],end='')
                     else:
                         print(RED+line[i],end='')
+                for i in range(len(line[4:].split(' ')),16):
+                        print(' ',end='')
                 linetime = int(line[:-1].split(' ')[1])
                 mins = int(linetime / (1000*60))
                 secs = linetime % 60000 / 1000

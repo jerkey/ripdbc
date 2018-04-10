@@ -8,7 +8,7 @@ RED    = '\033[31m'
 YELLOW = '\033[33m'
 
 ids = [530,546,770,924,930] # list of CAN IDs we care about
-lastMsg = ['                                                                     '] * len(ids) # empty so it's not too short to compare with
+lastMsg = ['                                                                                                                                                                                                                                               '] * len(ids) # empty so it's not too short to compare with
 
 def parseCan(id,data):
     if id==530:

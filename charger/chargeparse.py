@@ -7,10 +7,12 @@ GREEN  = '\033[32m'
 RED    = '\033[31m'
 YELLOW = '\033[33m'
 
-ids = [530,546,770,924,930] # list of CAN IDs we care about
+ids = [530,546,770,924,930,551] # list of CAN IDs we care about
 lastMsg = ['                                                                                                                                                                                                                                               '] * len(ids) # empty so it's not too short to compare with
+CHGPH1_vBat = 0.0 # in case we want to tag this data onto some other ID for reference
 
 def parseCan(id,data):
+    global CHGPH1_vBat, ids, lastMsg
     if id==530:
         BMS_contactorState = int(data[5],16) # lower 4 bits of third byte
         BMS_state = int(data[4],16) # high 4 bits of third byte
@@ -31,7 +33,7 @@ def parseCan(id,data):
         #BMS_chargeFC_type : 52|3@1+ (1,0) [0|7] "" GTW,CHG 7 "PT_FC_TYPE_SNA" 6 "PT_FC_TYPE_OTHER" 3 "PT_FC_TYPE_CC_EVSE" 2 "PT_FC_TYPE_CHINAMO" 1 "PT_FC_TYPE_CHADEMO" 0 "PT_FC_TYPE_SUPERCHARGER" ;
     elif id==770:
         BMS_socMin = (int(data[3]+data[0:2],16) & 1023) * 0.1 # "BMS State Of Charge (SOC). This is the minimum displayed brick SOC.  This is NOT cell SOC"
-        message = ('BMS_socMin:%.0f' % BMS_socMin)+'%'
+        message = ('BMS_socMin:%.0f' % BMS_socMin)+'%'+'  CHGPH1_vBat:%.0f' % CHGPH1_vBat
     elif id==924: # didn't see this at all in the 2018-4-9 capture
         CC_currentLimit_PT = int(data[0:2],16) * 0.5 # "A" CHG,GTW "periodic TEN_SECONDS chargeModeModelS,periodic TEN_SECONDS voltageModeModelS"
         CC_pilotState_PT = int(data[3],16) & 3 #: 8|2@1+ (1,0) [0|3] "" CHG,GTW
@@ -44,6 +46,9 @@ def parseCan(id,data):
         message += '  BMS_fastChargerPresent:'+str(int(data[2],16) & 4) #: 14|1@1+ (1,0) [0|0] "" CP,GTW "TRUE when the fast charger Status Message has been received within the last 1 second"
         message += '  BMS_fcContactorCloseRequest:'+str(int(data[2],16) & 8) #: 15|1@1+ (1,0) [0|0] "" CHG,CHGS,GTW "1 if the charger should close the FC contactors"
         message += '  BMS_fcContactorPwrIsOn:'+str(int(data[6:8],16) & 16) #: 28|1@1+ (1,0) [0|0] "" CHG,CHGS,GTW "This bit indicates if the BMShas powered the FC Contactor Power line which is used by the charger to diagnose its h/w"
+    elif id==551:
+        CHGPH1_vBat = int(data[6:8]+data[4:6],16) * 0.010528564 #: 16|16@1+ (0.010528564,0) [0|690] "V" CHGVI BO_ 551 CHGPH1_HVStatus: 8 CHGPH1
+        message = lastMsg[ids.index(id)] # a hack to prevent printing anything
     else:
         message = data
     return message

@@ -27,20 +27,21 @@ for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like
         id = int(line.split(':')[0],16)
         if id in ids: # we ignore CAN IDs not in our list
             idIndex = ids.index(id)
-            if lastMsg[idIndex].split(' ')[0] != line.split(' ')[0]: # ignore messages that haven't changed since we last saw them
+            parsedLine = parseCan(id,line[4:20])
+            if lastMsg[idIndex] != parsedLine: # ignore messages that haven't changed since we last saw them
                 print(str(id)+'\t',end='')
-                print(parseCan(id,line[4:20]),end='')
-                for i in range(4,len(line.split(' ')[0])): # print character by character, colored according to same or changed
-                    if lastMsg[idIndex][i]==line[i]:
-                        print(RESET+line[i],end='')
+                # print(parsedLine+';'+str(len(lastMsg[idIndex]))+':'+str(len(parsedLine)))
+                for i in range(len(parsedLine)): # print character by character, colored according to same or changed
+                    if lastMsg[idIndex].ljust(len(parsedLine))[i]==parsedLine[i]:
+                        print(RESET+parsedLine[i],end='')
                     else:
-                        print(RED+line[i],end='')
-                for i in range(len(line[4:].split(' ')),16): # pad data with spaces out to 16 characters
+                        print(RED+parsedLine[i],end='')
+                for i in range(len(parsedLine),72): # pad data with spaces
                         print(' ',end='')
                 linetime = int(line[:-1].split(' ')[1]) # get the time in milliseconds from the log
                 mins = int(linetime / (1000*60))
                 secs = linetime % 60000 / 1000
-                lastMsg[idIndex] = line # store the latest line to compare with for next time
+                lastMsg[idIndex] = parsedLine # store the latest line to compare with for next time
                 print('\t'+YELLOW+str(mins).zfill(3)+':',end='') # print the number of minutes:
                 if secs < 10:
                     print('0',end='')

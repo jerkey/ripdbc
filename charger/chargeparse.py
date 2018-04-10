@@ -29,6 +29,9 @@ def parseCan(id,data):
         message += ' BMS_chargeEnable:'+str(BMS_chargeEnable) if BMS_chargeEnable else ''
         #BMS_chargeFC_statusCode : 48|4@1+ (1,0) [0|0] "" CHG 15 "PT_FC_STATUS_NODATA" 14 "PT_FC_STATUS_MALFUNCTION" 13 "PT_FC_STATUS_NOTCOMPATIBLE" 6 "PT_FC_STATUS_EXT_ISOACTIVE" 5 "PT_FC_STATUS_INT_ISOACTIVE" 4 "PT_FC_STATUS_UTILITY" 3 "PT_FC_STATUS_SHUTDOWN" 2 "PT_FC_STATUS_PRELIMITEXCEEDED" 1 "PT_FC_STATUS_READY" 0 "PT_FC_STATUS_NOTREADY_SNA" ;
         #BMS_chargeFC_type : 52|3@1+ (1,0) [0|7] "" GTW,CHG 7 "PT_FC_TYPE_SNA" 6 "PT_FC_TYPE_OTHER" 3 "PT_FC_TYPE_CC_EVSE" 2 "PT_FC_TYPE_CHINAMO" 1 "PT_FC_TYPE_CHADEMO" 0 "PT_FC_TYPE_SUPERCHARGER" ;
+    elif id==770:
+        BMS_socMin = (int(data[3]+data[0:2],16) & 1023) * 0.1 # "BMS State Of Charge (SOC). This is the minimum displayed brick SOC.  This is NOT cell SOC"
+        message = ('BMS_socMin:%.0f' % BMS_socMin)+'%'
     else:
         message = data
     return message

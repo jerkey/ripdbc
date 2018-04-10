@@ -25,7 +25,7 @@ def main():
           line = getLine(inFile)
           spl = line.split()
           if len(spl) > 0 and spl[-1].find(dest)>=0 and canid_source != dest: # look for dest in listeners
-              print(canid_hex+"\t"+canid_name.ljust(30)+"from "+canid_source) # output the CAN ID description and origin
+              print(canid_hex+"\t"+canid_dec.ljust(5)+"\t"+canid_name.ljust(30)+"from "+canid_source) # output the CAN ID description and origin
               line = '' # make len(line) zero so this while loop exits
 
 if __name__ == "__main__":

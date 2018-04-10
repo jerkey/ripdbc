@@ -16,7 +16,10 @@ def parseCan(id,data):
         BMS_contactorState = int(data[5],16) # lower 4 bits of third byte
         BMS_state = int(data[4],16) # high 4 bits of third byte
         BMS_contactorStateText = {6:"BMS_CTRSET_CLEANING",5:"BMS_CTRSET_WELD",4:"BMS_CTRSET_SNA",3:"BMS_CTRSET_OPENING",2:"BMS_CTRSET_CLOSED",1:"BMS_CTRSET_PRECHARGE",0:"BMS_CTRSET_OPEN"}
-        message += 'BMS_contactorState:'+BMS_contactorStateText.get(BMS_contactorState,' ').ljust(20)
+        BMS_stateText = {15:"BMS_SNA",8:"BMS_WELD",7:"BMS_FAULT",6:"BMS_CLEARFAULT",5:"BMS_CHARGERVOLTAGE",4:"BMS_FASTCHARGE",3:"BMS_CHARGER",2:"BMS_SUPPORT",1:"BMS_DRIVE",0:"BMS_STANDBY"}
+        message += 'BMS_contactorState:'+BMS_contactorStateText.get(BMS_contactorState,' ').ljust(20) + ' BMS_state:' + BMS_stateText.get(BMS_state,' ').ljust(18)
+    else:
+        message = data
     return message
 
 for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like

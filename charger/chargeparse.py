@@ -3,7 +3,7 @@
 filename='/home/user/hack/tesla/canhack/charger/chargetwice.log'
 
 ids = [530,546,770,924,930] # list of CAN IDs we care about
-lastMsg = [''] * len(ids)
+lastMsg = ['                                                                     '] * len(ids)
 
 inFile = open(filename)
 

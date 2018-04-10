@@ -10,6 +10,15 @@ YELLOW = '\033[33m'
 ids = [530,546,770,924,930] # list of CAN IDs we care about
 lastMsg = ['                                                                     '] * len(ids) # empty so it's not too short to compare with
 
+def parseCan(id,data):
+    message = ''
+    if id==530:
+        BMS_contactorState = int(data[5],16) # lower 4 bits of third byte
+        BMS_state = int(data[4],16) # high 4 bits of third byte
+        BMS_contactorStateText = {6:"BMS_CTRSET_CLEANING",5:"BMS_CTRSET_WELD",4:"BMS_CTRSET_SNA",3:"BMS_CTRSET_OPENING",2:"BMS_CTRSET_CLOSED",1:"BMS_CTRSET_PRECHARGE",0:"BMS_CTRSET_OPEN"}
+        message += 'BMS_contactorState:'+BMS_contactorStateText.get(BMS_contactorState,' ').ljust(20)
+    return message
+
 for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like
     if line.find('CAN')!=0: # swallow the init lines from ks_can2serial.ino
         id = int(line.split(':')[0],16)
@@ -17,6 +26,7 @@ for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like
             idIndex = ids.index(id)
             if lastMsg[idIndex].split(' ')[0] != line.split(' ')[0]: # ignore messages that haven't changed since we last saw them
                 print(str(id)+'\t',end='')
+                print(parseCan(id,line[4:20]),end='')
                 for i in range(4,len(line.split(' ')[0])): # print character by character, colored according to same or changed
                     if lastMsg[idIndex][i]==line[i]:
                         print(RESET+line[i],end='')
@@ -33,7 +43,3 @@ for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like
                     print('0',end='')
                 print(str(secs)+RESET) # print the number of seconds (a float) and ANSI RESET
 
-def parseCan(id,data):
-    if id==530:
-        BMS_contactorState = int(data[5],16) # lower 4 bits of third byte
-        BMS_state = int(data[4],16) # high 4 bits of third byte

@@ -25,7 +25,8 @@ def parseCan(id,data):
         message += ' BMS_chargeClearFaults' if int(data[11],16) & 4 else ''# : 42|1@1+ (1,0) [0|0] aka 4          "" CHG "BMS Clear Faults";
         message += ' BMS_fcRequest' if int(data[11],16) & 8 else ''#: 43|1@1+ (1,0) [0|0]             8          "" CP,CHG "The BMS requests the charger to enable the FC sequence and turn on the BMS FC CAN Relay.";
         message += ' BMS_chgVLimitMode' if int(data[10],16) & 1 else ''# : 44|1@1+ (1,0) [0|0]         16         "" CHG "Tells the charger to either follow the BMS_chargeLimit or to track the pack voltage to prevent current spikes";
-        message += ' BMS_chargeEnable ' if int(data[10],16) & 6 else ''#: 45|2@1+ (1,0) [0|0]          32         "" CP,CHG "BMS Charge Enable";
+        BMS_chargeEnable = (int(data[10],16) & 6) >> 1 #: 45|2@1+ (1,0) [0|0]          32         "" CP,CHG "BMS Charge Enable";
+        message += ' BMS_chargeEnable:'+str(BMS_chargeEnable) if BMS_chargeEnable else ''
         #BMS_chargeFC_statusCode : 48|4@1+ (1,0) [0|0] "" CHG 15 "PT_FC_STATUS_NODATA" 14 "PT_FC_STATUS_MALFUNCTION" 13 "PT_FC_STATUS_NOTCOMPATIBLE" 6 "PT_FC_STATUS_EXT_ISOACTIVE" 5 "PT_FC_STATUS_INT_ISOACTIVE" 4 "PT_FC_STATUS_UTILITY" 3 "PT_FC_STATUS_SHUTDOWN" 2 "PT_FC_STATUS_PRELIMITEXCEEDED" 1 "PT_FC_STATUS_READY" 0 "PT_FC_STATUS_NOTREADY_SNA" ;
         #BMS_chargeFC_type : 52|3@1+ (1,0) [0|7] "" GTW,CHG 7 "PT_FC_TYPE_SNA" 6 "PT_FC_TYPE_OTHER" 3 "PT_FC_TYPE_CC_EVSE" 2 "PT_FC_TYPE_CHINAMO" 1 "PT_FC_TYPE_CHADEMO" 0 "PT_FC_TYPE_SUPERCHARGER" ;
     else:

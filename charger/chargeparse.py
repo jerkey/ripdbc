@@ -27,7 +27,7 @@ for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like
         id = int(line.split(':')[0],16)
         if id in ids: # we ignore CAN IDs not in our list
             idIndex = ids.index(id)
-            parsedLine = parseCan(id,line[4:20])
+            parsedLine = parseCan(id,line.split(' ')[0][4:20])
             if lastMsg[idIndex] != parsedLine: # ignore messages that haven't changed since we last saw them
                 print(str(id)+'\t',end='')
                 # print(parsedLine+';'+str(len(lastMsg[idIndex]))+':'+str(len(parsedLine)))

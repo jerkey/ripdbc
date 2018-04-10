@@ -11,13 +11,23 @@ ids = [530,546,770,924,930] # list of CAN IDs we care about
 lastMsg = ['                                                                     '] * len(ids) # empty so it's not too short to compare with
 
 def parseCan(id,data):
-    message = ''
     if id==530:
         BMS_contactorState = int(data[5],16) # lower 4 bits of third byte
         BMS_state = int(data[4],16) # high 4 bits of third byte
         BMS_contactorStateText = {6:"BMS_CTRSET_CLEANING",5:"BMS_CTRSET_WELD",4:"BMS_CTRSET_SNA",3:"BMS_CTRSET_OPENING",2:"BMS_CTRSET_CLOSED",1:"BMS_CTRSET_PRECHARGE",0:"BMS_CTRSET_OPEN"}
         BMS_stateText = {15:"BMS_SNA",8:"BMS_WELD",7:"BMS_FAULT",6:"BMS_CLEARFAULT",5:"BMS_CHARGERVOLTAGE",4:"BMS_FASTCHARGE",3:"BMS_CHARGER",2:"BMS_SUPPORT",1:"BMS_DRIVE",0:"BMS_STANDBY"}
-        message += 'BMS_contactorState:'+BMS_contactorStateText.get(BMS_contactorState,' ').ljust(20) + ' BMS_state:' + BMS_stateText.get(BMS_state,' ').ljust(18)
+        message = 'BMS_contactorState:'+BMS_contactorStateText.get(BMS_contactorState,' ').ljust(20) + ' BMS_state:' + BMS_stateText.get(BMS_state,' ').ljust(18)
+    elif id==546:
+        BMS_chargeCommand = int(data[2:4]+data[0:2],16) * 0.001 #: 0|16@1+ (0.001,0) [0|40]               "kW" CHG "BMS Commanded AC power";
+        BMS_chargeVoltageLimit = int(data[6:8]+data[4:6],16) * 0.01 #: 16|16@1+ (0.01,0) [0|600]         "V" CHG "BMS Pack voltage limit";
+        BMS_chargeLineCurrentLimit = int(data[10]+data[8:10],16) % 512 * 0.16666 #: 32|9@1+ (0.16666,0) [0|85.16] "A" CHG "BMS Line current limit";
+        message = 'BMS_chargeCommand:'+('%.0f' % BMS_chargeCommand).rjust(2)+'kW  BMS_chargeVoltageLimit:'+('%.0f' % BMS_chargeVoltageLimit).rjust(3)+'V  BMS_chargeLineCurrentLimit:'+('%.0f' % BMS_chargeLineCurrentLimit).rjust(2)+'A '+data[10:12]
+        message += ' BMS_chargeClearFaults' if int(data[11],16) & 4 else ''# : 42|1@1+ (1,0) [0|0] aka 4          "" CHG "BMS Clear Faults";
+        message += ' BMS_fcRequest' if int(data[11],16) & 8 else ''#: 43|1@1+ (1,0) [0|0]             8          "" CP,CHG "The BMS requests the charger to enable the FC sequence and turn on the BMS FC CAN Relay.";
+        message += ' BMS_chgVLimitMode' if int(data[10],16) & 1 else ''# : 44|1@1+ (1,0) [0|0]         16         "" CHG "Tells the charger to either follow the BMS_chargeLimit or to track the pack voltage to prevent current spikes";
+        message += ' BMS_chargeEnable ' if int(data[10],16) & 2 else ''#: 45|2@1+ (1,0) [0|0]          32         "" CP,CHG "BMS Charge Enable";
+        #BMS_chargeFC_statusCode : 48|4@1+ (1,0) [0|0] "" CHG 15 "PT_FC_STATUS_NODATA" 14 "PT_FC_STATUS_MALFUNCTION" 13 "PT_FC_STATUS_NOTCOMPATIBLE" 6 "PT_FC_STATUS_EXT_ISOACTIVE" 5 "PT_FC_STATUS_INT_ISOACTIVE" 4 "PT_FC_STATUS_UTILITY" 3 "PT_FC_STATUS_SHUTDOWN" 2 "PT_FC_STATUS_PRELIMITEXCEEDED" 1 "PT_FC_STATUS_READY" 0 "PT_FC_STATUS_NOTREADY_SNA" ;
+        #BMS_chargeFC_type : 52|3@1+ (1,0) [0|7] "" GTW,CHG 7 "PT_FC_TYPE_SNA" 6 "PT_FC_TYPE_OTHER" 3 "PT_FC_TYPE_CC_EVSE" 2 "PT_FC_TYPE_CHINAMO" 1 "PT_FC_TYPE_CHADEMO" 0 "PT_FC_TYPE_SUPERCHARGER" ;
     else:
         message = data
     return message

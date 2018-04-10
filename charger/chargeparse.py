@@ -18,7 +18,8 @@ for line in inFile:
         if id in ids:
             idIndex = ids.index(id)
             if lastMsg[idIndex].split(' ')[0] != line.split(' ')[0]:
-                for i in range(len(line.split(' ')[0])):
+                print(str(id)+'\t',end='')
+                for i in range(4,len(line.split(' ')[0])):
                     if lastMsg[idIndex][i]==line[i]:
                         print(RESET+line[i],end='')
                     else:

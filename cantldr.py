@@ -15,19 +15,21 @@ for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like
         id = int(line.split(':')[0],16)
         if id in ids: # we ignore CAN IDs not in our list
             idIndex = ids.index(id)
-            if lastMsg[idIndex].split(' ')[0] != line.split(' ')[0]: # ignore messages that haven't changed since we last saw them
+            data = line.split(' ')[0][4:20]
+            data = data[0:4]+' '+data[4:8]+' '+data[8:12]+' '+data[12:16] # add spaces for readability
+            if lastMsg[idIndex] != data: # ignore messages that haven't changed since we last saw them
                 print(str(id)+'\t',end='')
-                for i in range(4,len(line.split(' ')[0])): # print character by character, colored according to same or changed
-                    if lastMsg[idIndex][i]==line[i]:
-                        print(RESET+line[i],end='')
+                for i in range(len(data)): # print character by character, colored according to same or changed
+                    if lastMsg[idIndex][i]==data[i]:
+                        print(RESET+data[i],end='')
                     else:
-                        print(RED+line[i],end='')
-                for i in range(len(line[4:].split(' ')),16): # pad data with spaces out to 16 characters
+                        print(RED+data[i],end='')
+                for i in range(len(data),20): # pad data with spaces out to 20 characters
                         print(' ',end='')
                 linetime = int(line[:-1].split(' ')[1]) # get the time in milliseconds from the log
                 mins = int(linetime / (1000*60))
                 secs = linetime % 60000 / 1000
-                lastMsg[idIndex] = line # store the latest line to compare with for next time
+                lastMsg[idIndex] = data # store the latest data to compare with for next time
                 print('\t'+YELLOW+str(mins).zfill(3)+':',end='') # print the number of minutes:
                 if secs < 10:
                     print('0',end='')

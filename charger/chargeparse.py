@@ -22,7 +22,7 @@ def parseCan(id,data):
     elif id==546:
         BMS_chargeCommand = int(data[2:4]+data[0:2],16) * 0.001 #: 0|16@1+ (0.001,0) [0|40]               "kW" CHG "BMS Commanded AC power";
         BMS_chargeVoltageLimit = int(data[6:8]+data[4:6],16) * 0.01 #: 16|16@1+ (0.01,0) [0|600]         "V" CHG "BMS Pack voltage limit";
-        BMS_chargeLineCurrentLimit = int(data[10]+data[8:10],16) % 512 * 0.16666 #: 32|9@1+ (0.16666,0) [0|85.16] "A" CHG "BMS Line current limit";
+        BMS_chargeLineCurrentLimit = int(data[11]+data[8:10],16) % 512 * 0.16666 #: 32|9@1+ (0.16666,0) [0|85.16] "A" CHG "BMS Line current limit";
         message = 'BMS_chargeCommand:'+('%.0f' % BMS_chargeCommand).rjust(2)+'kW  BMS_chargeVoltageLimit:'+('%.0f' % BMS_chargeVoltageLimit).rjust(3)+'V  BMS_chargeLineCurrentLimit:'+('%.0f' % BMS_chargeLineCurrentLimit).rjust(2)+'A '+data[10:12]
         BMS_chargeEnable = (int(data[10],16) & 6) >> 1 #: 45|2@1+ (1,0) [0|0]          32         "" CP,CHG "BMS Charge Enable";
         message += ' BMS_chargeEnable:'+str(BMS_chargeEnable)

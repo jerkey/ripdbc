@@ -72,8 +72,10 @@ def main(data):
         if previous == parsedLine:
             # ignore messages that haven't changed since we last saw them
             continue
+
         print(str(can_id) + '\t', end='')
         # print(parsedLine+';'+str(len(previous))+':'+str(len(parsedLine)))
+
         previous_justified = previous.ljust(len(parsedLine))
         for i,c in enumerate(parsedLine):
             # print character by character, colored according to same or changed
@@ -81,17 +83,17 @@ def main(data):
                 print(RESET + c, end='')
             else:
                 print(RED + c, end='')
-        for i in range(len(parsedLine),128):
-            # pad data with spaces
-            print(' ', end='')
+
+        pad = ' ' * (128 - len(parsedLine))
+        print(pad, end='')
+
+        msgs[can_id] = parsedLine # store the latest line to compare with for next time
         linetime = int(line[:-1].split(' ')[1]) # get the time in milliseconds from the log
         mins = int(linetime / (1000*60))
         secs = linetime % 60000 / 1000
-        msgs[can_id] = parsedLine # store the latest line to compare with for next time
-        print('\t' + YELLOW + str(mins).zfill(3) + ':', end='') # print the number of minutes:
-        if secs < 10:
-            print('0', end='')
-        print(str(secs) + RESET) # print the number of seconds (a float) and ANSI RESET
+        minutes, seconds = str(mins).zfill(3), str(secs)
+        seconds = '0' + seconds if secs < 10 else seconds
+        print('\t' + YELLOW + minutes + ':' + seconds + RESET)
 
 if __name__ == '__main__':
     import argparse

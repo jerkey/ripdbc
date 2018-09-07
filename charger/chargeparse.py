@@ -11,8 +11,8 @@ ids = [530,546,770,924,930,551] # list of CAN IDs we care about
 lastMsg = ['                                                                                                                                                                                                                                               '] * len(ids) # empty so it's not too short to compare with
 CHGPH1_vBat = 0.0 # in case we want to tag this data onto some other ID for reference
 
-def parseCan(id,data):
-    global CHGPH1_vBat, ids, lastMsg
+def parseCan(id, data, previousMsg):
+    global CHGPH1_vBat
     if id==530:
         BMS_contactorState = int(data[5],16) # lower 4 bits of third byte
         BMS_state = int(data[4],16) # high 4 bits of third byte
@@ -34,7 +34,7 @@ def parseCan(id,data):
     elif id==770:
         BMS_socMin = (int(data[3]+data[0:2],16) & 1023) * 0.1 # "BMS State Of Charge (SOC). This is the minimum displayed brick SOC.  This is NOT cell SOC"
         message = ('BMS_socMin:%.0f' % BMS_socMin)+'%'+'  CHGPH1_vBat:%.0f' % CHGPH1_vBat
-        message = lastMsg[ids.index(id)] # a hack to prevent printing anything
+        message = previousMsg # a hack to prevent printing anything
     elif id==924: # didn't see this at all in the 2018-4-9 capture
         CC_currentLimit_PT = int(data[0:2],16) * 0.5 # "A" CHG,GTW "periodic TEN_SECONDS chargeModeModelS,periodic TEN_SECONDS voltageModeModelS"
         CC_pilotState_PT = int(data[3],16) & 3 #: 8|2@1+ (1,0) [0|3] "" CHG,GTW
@@ -49,7 +49,7 @@ def parseCan(id,data):
         message += '  BMS_fcContactorPwrIsOn:'+str(int(data[6:8],16) & 16) #: 28|1@1+ (1,0) [0|0] "" CHG,CHGS,GTW "This bit indicates if the BMShas powered the FC Contactor Power line which is used by the charger to diagnose its h/w"
     elif id==551:
         CHGPH1_vBat = int(data[6:8]+data[4:6],16) * 0.010528564 #: 16|16@1+ (0.010528564,0) [0|690] "V" CHGVI BO_ 551 CHGPH1_HVStatus: 8 CHGPH1
-        message = lastMsg[ids.index(id)] # a hack to prevent printing anything
+        message = previousMsg # a hack to prevent printing anything
     else:
         message = data
     return message
@@ -66,15 +66,16 @@ def main(data):
             continue
         idIndex = ids.index(id)
         #parsedLine = parseCan(id, line.split(' ')[0][4:20])
-        parsedLine = parseCan(id, line[4:20])
-        if lastMsg[idIndex] == parsedLine:
+        previous = lastMsg[idIndex]
+        parsedLine = parseCan(id, line[4:20], previous)
+        if previous == parsedLine:
             # ignore messages that haven't changed since we last saw them
             continue
         print(str(id) + '\t', end='')
-        # print(parsedLine+';'+str(len(lastMsg[idIndex]))+':'+str(len(parsedLine)))
+        # print(parsedLine+';'+str(len(previous))+':'+str(len(parsedLine)))
         for i,c in enumerate(parsedLine):
             # print character by character, colored according to same or changed
-            if lastMsg[idIndex].ljust(len(parsedLine))[i] == c:
+            if previous.ljust(len(parsedLine))[i] == c:
                 print(RESET + c, end='')
             else:
                 print(RED + c, end='')

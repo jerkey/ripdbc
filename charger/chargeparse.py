@@ -7,8 +7,6 @@ GREEN  = '\033[32m'
 RED    = '\033[31m'
 YELLOW = '\033[33m'
 
-ids = [530,546,770,924,930,551] # list of CAN IDs we care about
-lastMsg = ['                                                                                                                                                                                                                                               '] * len(ids) # empty so it's not too short to compare with
 CHGPH1_vBat = 0.0 # in case we want to tag this data onto some other ID for reference
 
 def parseCan(id, data, previousMsg):
@@ -55,18 +53,21 @@ def parseCan(id, data, previousMsg):
     return message
 
 def main(data):
-    global lastMsg, ids
+    msgs = {}
+    for i in [530,546,770,924,930,551]: # list of CAN IDs we care about
+        # Empty so it's not too short to compare with. Using historical size from string literal.
+        msgs[i] = ' ' * 239
+
     for line in data: # '268:00000000B3000000 16\n' is what a line looks like
         if line.find('CAN') == 0:
             # swallow the init lines from ks_can2serial.ino
             continue
         id = int(line.split(':')[0], 16)
-        if id not in ids:
+        if id not in msgs.keys():
             # we ignore CAN IDs not in our list
             continue
-        idIndex = ids.index(id)
         #parsedLine = parseCan(id, line.split(' ')[0][4:20])
-        previous = lastMsg[idIndex]
+        previous = msgs[id]
         parsedLine = parseCan(id, line[4:20], previous)
         if previous == parsedLine:
             # ignore messages that haven't changed since we last saw them
@@ -85,7 +86,7 @@ def main(data):
         linetime = int(line[:-1].split(' ')[1]) # get the time in milliseconds from the log
         mins = int(linetime / (1000*60))
         secs = linetime % 60000 / 1000
-        lastMsg[idIndex] = parsedLine # store the latest line to compare with for next time
+        msgs[id] = parsedLine # store the latest line to compare with for next time
         print('\t' + YELLOW + str(mins).zfill(3) + ':', end='') # print the number of minutes:
         if secs < 10:
             print('0', end='')

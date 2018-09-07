@@ -55,6 +55,7 @@ def parseCan(id,data):
     return message
 
 def main(data):
+    global lastMsg, ids
     for line in data: # '268:00000000B3000000 16\n' is what a line looks like
         if line.find('CAN')!=0: # swallow the init lines from ks_can2serial.ino
             id = int(line.split(':')[0],16)

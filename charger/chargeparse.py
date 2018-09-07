@@ -74,9 +74,10 @@ def main(data):
             continue
         print(str(id) + '\t', end='')
         # print(parsedLine+';'+str(len(previous))+':'+str(len(parsedLine)))
+        previous_justified = previous.ljust(len(parsedLine))
         for i,c in enumerate(parsedLine):
             # print character by character, colored according to same or changed
-            if previous.ljust(len(parsedLine))[i] == c:
+            if previous_justified[i] == c:
                 print(RESET + c, end='')
             else:
                 print(RED + c, end='')

@@ -60,34 +60,35 @@ def main(data):
         if line.find('CAN') == 0:
             # swallow the init lines from ks_can2serial.ino
             continue
-        id = int(line.split(':')[0],16)
+        id = int(line.split(':')[0], 16)
         if id not in ids:
             # we ignore CAN IDs not in our list
             continue
         idIndex = ids.index(id)
-        parsedLine = parseCan(id,line.split(' ')[0][4:20])
+        #parsedLine = parseCan(id, line.split(' ')[0][4:20])
+        parsedLine = parseCan(id, line[4:20])
         if lastMsg[idIndex] == parsedLine:
             # ignore messages that haven't changed since we last saw them
             continue
-        print(str(id)+'\t',end='')
+        print(str(id) + '\t', end='')
         # print(parsedLine+';'+str(len(lastMsg[idIndex]))+':'+str(len(parsedLine)))
-        for i in range(len(parsedLine)):
+        for i,c in enumerate(parsedLine):
             # print character by character, colored according to same or changed
-            if lastMsg[idIndex].ljust(len(parsedLine))[i]==parsedLine[i]:
-                print(RESET+parsedLine[i],end='')
+            if lastMsg[idIndex].ljust(len(parsedLine))[i] == c:
+                print(RESET + c, end='')
             else:
-                print(RED+parsedLine[i],end='')
+                print(RED + c, end='')
         for i in range(len(parsedLine),128):
             # pad data with spaces
-            print(' ',end='')
+            print(' ', end='')
         linetime = int(line[:-1].split(' ')[1]) # get the time in milliseconds from the log
         mins = int(linetime / (1000*60))
         secs = linetime % 60000 / 1000
         lastMsg[idIndex] = parsedLine # store the latest line to compare with for next time
-        print('\t'+YELLOW+str(mins).zfill(3)+':',end='') # print the number of minutes:
+        print('\t' + YELLOW + str(mins).zfill(3) + ':', end='') # print the number of minutes:
         if secs < 10:
-            print('0',end='')
-        print(str(secs)+RESET) # print the number of seconds (a float) and ANSI RESET
+            print('0', end='')
+        print(str(secs) + RESET) # print the number of seconds (a float) and ANSI RESET
 
 if __name__ == '__main__':
     import argparse

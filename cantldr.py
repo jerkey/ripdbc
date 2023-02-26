@@ -7,18 +7,27 @@ GREEN  = '\033[32m'
 RED    = '\033[31m'
 YELLOW = '\033[33m'
 
-ids = [530,546,770,924,930] # list of CAN IDs we care about
+# cat /tmp/can2serial.txt | cut -d":" -f1 | sort | uniq
+# ids = [0x610,0x618,0x612,0x613,0x614] # list of CAN IDs we care about for brusa
+ids = [] # list of CAN IDs we care about
+# sent by L3CC board to Mobi charger
+ids.append(0x500); # L3CC information reporting ID
+ids.append(0x109); # YELLOWBEE_CONTROL_REQ
+ids.append(0x10C); # YELLOWBEE_STATUS_REQ
+# sent by Zekalabs Yellowbee LB-1071-01-01
+ids.append(0x409); # YELLOWBEE_CONTROL_RSP
+ids.append(0x40C); # YELLOWBEE_STATUS_RSP
 lastMsg = ['                                                                     '] * len(ids) # empty so it's not too short to compare with
 
 for line in inFile: # '268:00000000B3000000 16\n' is what a line looks like
-    if line.find('CAN')!=0: # swallow the init lines from ks_can2serial.ino
+    if line.find(':')==3: # ignore invalid lines from ks_can2serial.ino
         id = int(line.split(':')[0],16)
         if id in ids: # we ignore CAN IDs not in our list
             idIndex = ids.index(id)
             data = line.split(' ')[0][4:20]
             data = data[0:4]+' '+data[4:8]+' '+data[8:12]+' '+data[12:16] # add spaces for readability
             if lastMsg[idIndex] != data: # ignore messages that haven't changed since we last saw them
-                print(str(id)+'\t',end='')
+                print(hex(id)+'\t',end='')
                 for i in range(len(data)): # print character by character, colored according to same or changed
                     if lastMsg[idIndex][i]==data[i]:
                         print(RESET+data[i],end='')
